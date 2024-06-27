@@ -5,6 +5,6 @@
     - Many configurable options.
     - Added Threading.
 
-### for more info check *versionslog.md*[https://github.com/Sneezedip/Spotify-Checker/blob/main/versionslog.MD]
+### for more info check *versionslog.md*
 
 **Please note: This project is not intended for commercial use. It is provided for educational and personal use only.**
