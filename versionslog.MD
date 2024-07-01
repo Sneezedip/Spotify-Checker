@@ -1,3 +1,7 @@
+# Version 1.1.1
+    - Added config.cfg for easier program configuration.
+    - Remove useless chrome arguments.
+    
 # Version 1.1.0
     - Added an option to modify the delay when max threads is reached + more logs
     - Added Counter (and option to activate it.)

@@ -1,4 +1,4 @@
-import os,time,threading,sys
+import os,time,threading,sys,configparser
 try:
     import colorama
     from colorama import Fore,Style
@@ -9,22 +9,22 @@ try:
 except:
     os.system("pip install -r requirements.txt")
 
-
 #STATIC CONFIGS **DO NOT MODIFY**
 COUNTER = 0
 CURRENT_THREADS = 0
 colorama.init(autoreset=True)
 WARN = False
-#PROGRAM CONFIGS#
-MAX_THREADS = 10
-MAX_THREADS_DELAY = 1
-ACCOUNT_FILE_NAME = "test.txt"
-SEPARATED_BY = ":"
-OUTPUT_FILE = "valid.txt"
-SHOW_COUNTER = True
-LOG_LEVEL = 1  # 1 - Will print what account its checking and it will say whether its valid or not and will warn when max threads is reached.
-               # 2 - Will print only if its valid or not.
-               # 3 - Won't print nothing.
+config = configparser.ConfigParser()
+config.read('config.cfg')
+HEADLESS = config.getboolean('Settings','HEADLESS')
+MAX_THREADS = config.getint('Settings', 'MAX_THREADS')
+MAX_THREADS_DELAY = config.getint('Settings', 'MAX_THREADS_DELAY')
+ACCOUNT_FILE_NAME = config.get('Settings', 'ACCOUNT_FILE_NAME')
+SEPARATED_BY = config.get('Settings', 'SEPARATED_BY')
+OUTPUT_FILE = config.get('Settings', 'OUTPUT_FILE')
+SHOW_COUNTER = config.getboolean('Settings', 'SHOW_COUNTER')
+LOG_LEVEL = config.getint('Settings', 'LOG_LEVEL')
+
 class Program():
     def __init__(self,email,passw,current,account):
         global CURRENT_THREADS
@@ -32,21 +32,15 @@ class Program():
         self.CURRENT_COUNT = current
         self.login = "https://accounts.spotify.com/login"
         options = selenium.webdriver.ChromeOptions()
-        options.add_argument("--headless")
+        if HEADLESS : options.add_argument("--headless")
         options.add_argument("--disable-gpu")
         options.add_argument("--incognito")
         options.add_argument('--disable-extensions')
         options.add_argument("--test-type")
-        options.add_argument('--ignore-gpu-blacklist')
         options.add_argument('--no-default-browser-check')
-        options.add_argument('--no-first-run')
-        options.add_argument('--disable-default-apps')
-        options.add_argument('--disable-infobars')
-        options.add_argument("--log-level=3")
         options.add_experimental_option('excludeSwitches', ['enable-logging'])
         self.Driver = selenium.webdriver.Chrome(options=options)
         self.Driver.get(self.login)
-
         try:
             self.username_space = self.Driver.find_element(By.ID,"login-username")
             self.password_space = self.Driver.find_element(By.ID,"login-password")
@@ -54,7 +48,6 @@ class Program():
         except:
             CURRENT_THREADS -= 1
             return
-
         self.login = self.Driver.current_url
         self.TryAccount(email,passw)
     def TryAccount(self,email,passw):
