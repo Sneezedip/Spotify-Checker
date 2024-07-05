@@ -1,3 +1,9 @@
+# Version 1.1.2
+    - Removed some extra delay (+~40.4% faster)
+    - Removed '#' from COUNTER.
+    - Fixed variable COUNTER printing under the text.
+    - Added Delay between each thread to fix text printing errors.
+
 # Version 1.1.1
     - Added config.cfg for easier program configuration.
     - Remove useless chrome arguments.
