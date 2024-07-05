@@ -4,7 +4,7 @@
 # Version 1.1.2
     - Removed some extra delay (+~40.4% faster)
     - Removed '#' from COUNTER.
-    - Fixed variable COUNTER printing under the text.
+    - Fixed variable COUNTER printing under the text (Kinda).
     - Added Delay between each thread to fix text printing errors.
 
 ## Known Bugs
